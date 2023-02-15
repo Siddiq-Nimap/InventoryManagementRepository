@@ -1,6 +1,10 @@
-﻿using CrudOperations.CustomFilters;
+﻿using AutoMapper;
+using BusinessLayer;
+using CrudOperations.CustomFilters;
 using CrudOperations.Interfaces;
-using CrudOperations.Models;
+using DAL.DTO;
+using DAL.Models;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -16,28 +20,24 @@ namespace CrudOperations.Controllers
     [CustomFilterClass]
     public class CatagoryController : Controller
     {
-        readonly IPaging page;
-        //readonly ProductContex productdb;
         readonly ILogin logins;
-        readonly ICategory category;
+        readonly ICategory Category;
+        readonly ICategoryInsert categoryInsert;
         readonly ICategoryActivation CategoryActivate;
-        readonly ICategoryInsertion CategoryInsert;
-        readonly ICategoryModification CategoryModify;
-        readonly IProduct products;
-        public CatagoryController(IPaging page,
+        readonly IAllRepository<Catagory> catagory;
+        readonly IPaging page;
+        public CatagoryController(
             ILogin logins,
-            ICategory category, IProduct product,
-            ICategoryInsertion insert,
-            ICategoryActivation activate,
-            ICategoryModification modify)
+            ICategoryActivation activate,ICategoryInsert catin,
+            IAllRepository<Catagory> cat, ICategory Cata,IPaging page)
         {
-            this.page = page;
-            this.products = product;
+            
             this.logins = logins;
-            this.category = category;
-            this.CategoryActivate = activate;
-            this.CategoryInsert = insert;
-            this.CategoryModify = modify;
+            CategoryActivate = activate;
+            catagory= cat;
+            categoryInsert = catin;
+            Category = Cata;
+            this.page = page;
         }
 
         [HttpGet]
@@ -49,13 +49,16 @@ namespace CrudOperations.Controllers
         [HttpGet]
         public async Task<ActionResult> CatagoryList(int PagingNbr = 1)
         {
-            var data = await page.Paging<List<Catagory>>(PagingNbr,"List<Catagory>");
+            var data = await page.Paging<List<Catagory>>(PagingNbr, "List<Catagory>");
 
             ViewBag.CurrentPage = PagingNbr;
 
             ViewBag.TotalPage = page.TotalPages();
+            var Catdto = Mapper.Map<IEnumerable<Catagory>, IEnumerable<CatagoryDto>>(data);
 
-            return View(data);
+            return View(Catdto);
+
+
         }
 
         [HttpGet]
@@ -70,14 +73,14 @@ namespace CrudOperations.Controllers
             string name = IdentifierName.Value;
             var id = await logins.GetIdByUsername(name);
 
-            var data = await category.GetReportAsync(id);
+            var data = await Category.GetReportAsync(id);
             return View(data);
         }
         [HttpGet]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> ReportALL()
         {
-            var data = await category.GetReportAsync();
+            var data = await Category.GetReportAsync();
             if(data != null) { return View(data); } else { return RedirectToAction("CatagoryList", "Catagory"); }
         }
 
@@ -89,11 +92,12 @@ namespace CrudOperations.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        [ActionName("Create")]
-      public async Task<ActionResult> CreateAsync(Catagory cat)
+      public async Task<ActionResult> Create(CatagoryDto cat)
         {
-            //bool data = await productdb.InsertCatagoryAsync(cat);
-            bool data = await CategoryInsert.InsertCatagoryAsync(cat);
+           var cata = Mapper.Map<CatagoryDto,Catagory>(cat);
+
+            catagory.InsertModel(cata);
+            bool data =  await catagory.Save();
             if (data == true)
             {
                 return Json("Your data has successfully inserted");
@@ -109,8 +113,9 @@ namespace CrudOperations.Controllers
         [ActionName("ShowProduct")]
         public async Task<ActionResult> ShowProductAsync(int id)
         {
-            var data = await category.GetProductsByCatagoryIdAsync(id);
-            return View(data);
+            var data = await Category.GetProductsByCatagoryIdAsync(id);
+            var ProductList = Mapper.Map<IEnumerable<Product>, IEnumerable<ProductDto>>(data);
+            return View(ProductList);
         }
 
         [HttpGet]
@@ -119,15 +124,16 @@ namespace CrudOperations.Controllers
         public async Task<ActionResult> AddProductAsync(int id)
         {
             TempData["id"] = id;
-            var data = await category.GetNonAddedProduct(id);
-            return View(data);
+            var data = await Category.GetNonAddedProduct(id);
+            var ProductList = Mapper.Map<IEnumerable<Product>, IEnumerable<ProductDto>>(data);
+            return View(ProductList);
         }
 
         [Authorize(Roles = "Admin")]
-        [ActionName("AddProduct")]
+        [ActionName("AddProductTo")]
         public async Task<ActionResult> AddProductAsync(int Prodid, int Cataid)
         {
-           bool data =   await CategoryInsert.InsertProductInCatagoryAsync(Prodid, Cataid);
+           bool data =  await categoryInsert.InsertProductInCatagoryAsync(Prodid, Cataid);
             
             if (data == true)
             {
@@ -159,19 +165,28 @@ namespace CrudOperations.Controllers
 
         [HttpGet]
         [ActionName("Edit")]
-        public async Task<ActionResult> EditAsync(int Id)
+        public ActionResult EditAsync(int Id)
         {
-            var data = await category.GetCatagoryByIdAsync(Id);
-            return View(data);
+            //var data = await category.GetCatagoryByIdAsync(Id);
+            var data = catagory.GetModelById(Id);
+
+            var Catagorydto = Mapper.Map<Catagory, CatagoryDto>(data);
+            return View(Catagorydto);
         }
 
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [ActionName("Edit")]
-        public async Task<ActionResult> EditAsync(Catagory cat)
+        public async Task<ActionResult> EditAsync(CatagoryDto cat)
         {
-            bool data = await CategoryModify.EditCatagoryAsync(cat);
+            //bool data = await CategoryModify.EditCatagoryAsync(cat);
+
+
+            var cata = Mapper.Map<CatagoryDto, Catagory>(cat);
+            
+             catagory.UpdateModel(cata);
+            bool data = await catagory.Save();
             if (data == true)
             {
                 return RedirectToAction("CatagoryList", "Catagory");
@@ -184,28 +199,32 @@ namespace CrudOperations.Controllers
         }
 
         [HttpGet]
-        [ActionName("Delete")]
-        public async Task<ActionResult> DeleteAsync(int id)
+        public ActionResult Delete(int id)
         {
-            var data = await category.GetCatagoryByIdAsync(id);
-            return View(data);
+            //var data = await category.GetCatagoryByIdAsync(id);
+            var data = catagory.GetModelById(id);
+            var catagorydto = Mapper.Map<Catagory, CatagoryDto>(data);
+            return View(catagorydto);
         }
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        [ActionName("Delete")]
-        public async Task<ActionResult> DeleteAsync(Catagory catagory)
+        public async Task<ActionResult> Delete(CatagoryDto cat)
         {
-                await CategoryModify.DeleteCatagoryAsync(catagory.Id);
+            var cata = Mapper.Map<CatagoryDto, Catagory>(cat);
+                 catagory.DeleteModel(cata.Id);
+            await catagory.Save();
                 return RedirectToAction("CatagoryList", "Catagory");
         }
 
         [HttpGet]
         [ActionName("Details")]
-        public async Task<ActionResult> DetailsAsync(int id)
+        public ActionResult DetailsAsync(int id)
         {
-            var data = await category.GetCatagoryByIdAsync(id);
-            return View(data);
+            //var data = await category.GetCatagoryByIdAsync(id);
+            var data = catagory.GetModelById(id);
+            var cata = Mapper.Map<Catagory,CatagoryDto>(data);
+            return View(cata);
         }
     }
 }

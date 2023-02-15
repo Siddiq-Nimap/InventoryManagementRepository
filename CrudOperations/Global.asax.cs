@@ -1,4 +1,5 @@
-﻿using CrudOperations.App_Start;
+﻿using AutoMapper;
+using CrudOperations.App_Start;
 using CrudOperations.Business_Layer;
 using CrudOperations.Interfaces;
 using System.Security.Claims;
@@ -23,6 +24,7 @@ namespace CrudOperations
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();
+            Mapper.Initialize(c => c.AddProfile<MappingProfile>());
             UnityConfig.RegisterComponents();
             GlobalConfiguration.Configure(WebApiConfig.Register);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);

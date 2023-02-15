@@ -1,4 +1,4 @@
-﻿@model IEnumerable<CrudOperations.Models.Product>
+﻿@model IEnumerable<DAL.DTO.ProductDto>
 
 @{
     ViewBag.Title = "AddProduct";
@@ -53,7 +53,7 @@
             </td>
            
             <td>
-                <button class="btn-success">@Html.ActionLink("Add", "AddProduct", new { Prodid = item.Id, Cataid = Convert.ToInt32(TempData["id"]) })</button>
+                <button class="btn-success">@Html.ActionLink("Add", "AddProductTo", new { Prodid = item.Id, Cataid = Convert.ToInt32(TempData["id"]) })</button>
             </td>
         </tr>
     }

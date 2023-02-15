@@ -1,17 +1,12 @@
 using System.Web.Mvc;
 using Unity;
 using System.Web.Http;
-using CrudOperations.Models;
 using CrudOperations.Business_Layer.CategoryCrudOperation;
 using CrudOperations.Interfaces;
 using CrudOperations.Business_Layer.Activation;
-using CrudOperations.Business_Layer.Modification;
 using CrudOperations.Business_Layer.Insertion;
-using CrudOperations.Business_Layer.ProductCrudOperation;
-using CrudOperations.Interfaces.ProductInterfaces;
-using CrudOperations.Business_Layer.ProductCrudOperation.Modification;
-using CrudOperations.Business_Layer.ProductCrudOperation.Insertion;
 using CrudOperations.Business_Layer;
+using BusinessLayer;
 
 namespace CrudOperations
 {
@@ -30,16 +25,13 @@ namespace CrudOperations
             //catagory resolver
             container.RegisterType<ICategory, Categorys>();
             container.RegisterType<ICategoryActivation, Activation>();
-            container.RegisterType<ICategoryModification, CategoryModification>();
-            container.RegisterType<ICategoryInsertion, CategoryInsertion>();
+            container.RegisterType<ICategoryInsert, CategoryInsertion>();
 
             //Product Resolver
-            container.RegisterType<IProduct, ProductCrud>();
-            container.RegisterType<IProductInsertion, ProductInsertion>();
-            container.RegisterType<IProductModification, ProductModification>();
+            container.RegisterType(typeof(IAllRepository<>),typeof(AllRepository<>));
 
             //Login Resolver
-            container.RegisterType<ILogin, LoginCredentialClass>();
+            container.RegisterType<ILogin, CredentialClass>();
 
             //File Resolver
             container.RegisterType<IFileSaving, FileUploadClass>();

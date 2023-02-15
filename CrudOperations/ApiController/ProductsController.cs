@@ -1,27 +1,19 @@
-﻿using System;
+﻿using BusinessLayer;
+using DAL.Models;
+using System;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Script.Serialization;
-using CrudOperations.Business_Layer.ProductCrudOperation;
-using CrudOperations.Business_Layer.ProductCrudOperation.Insertion;
-using CrudOperations.Business_Layer.ProductCrudOperation.Modification;
-using CrudOperations.Interfaces;
-using CrudOperations.Interfaces.ProductInterfaces;
-using CrudOperations.Models;
 
 namespace CrudOperations.Controllers
 {
     public class ProductsController : ApiController 
     {
-        readonly IProduct product;
-        readonly IProductInsertion productInsert;
-        readonly IProductModification productModify;
-        public ProductsController(IProduct product,IProductInsertion productInsert,IProductModification productmodify)
+        readonly IAllRepository<Product> product;
+        public ProductsController(IAllRepository<Product> product)
         {
             this.product = product;
-            this.productInsert = productInsert;
-            productModify = productmodify;
 
         }
 
@@ -29,7 +21,7 @@ namespace CrudOperations.Controllers
         [HttpGet]
         public async Task<IHttpActionResult> GetProducts()
         {
-            var data = await product.GetProductAsync();
+            var data = await product.GetModel();
 
             JavaScriptSerializer scriptSerializer = new JavaScriptSerializer();
 
@@ -40,9 +32,9 @@ namespace CrudOperations.Controllers
 
         // GET: api/Products/5
         [HttpGet]
-        public async Task<IHttpActionResult> GetProduct(int id)
+        public IHttpActionResult GetProduct(int id)
         {
-            var products = await product.GetProductByIdAsync(id);
+            var products =  product.GetModelById(id);
 
             if (product == null)
             {
@@ -53,15 +45,16 @@ namespace CrudOperations.Controllers
 
         // PUT: api/Products/5
         [HttpPut]
-        public async Task<IHttpActionResult> PutProduct(int id, Product product)
+        public async Task<IHttpActionResult> PutProduct(int id, Product pro)
         {
             if (!ModelState.IsValid){return BadRequest(ModelState);}
 
-            if (id != product.Id){return BadRequest();}
+            if (id != pro.Id){return BadRequest();}
 
             try
             {
-                await productModify.EditProductAsync(product);
+                 product.UpdateModel(pro);
+                await product.Save();
             }
 
             catch (Exception E){return BadRequest(E.Message);}
@@ -75,7 +68,10 @@ namespace CrudOperations.Controllers
         {
             if (!ModelState.IsValid){return BadRequest(ModelState);}
 
-           var check = await productInsert.InsertProductAsync(products);
+           product.InsertModel(products);
+
+            var check = await product.Save();
+
             if (check == true)
             {
                 //return Created(new Uri(Request.RequestUri + "/" + new { id = products.Id }), products);
@@ -88,12 +84,13 @@ namespace CrudOperations.Controllers
         [HttpDelete]
         public async Task<IHttpActionResult> DeleteProduct(int id)
         {
-            var products =await product.GetProductByIdAsync(id);
+            var products = product.GetModelById(id);
             if (products == null)
             {
                 return NotFound();
             }
-             var check =await productModify.DeleteProductAsync(id);
+             product.DeleteModel(id);
+            var check = await product.Save();
             if(check == true) { return Ok(products); } else { return BadRequest(); }
 
             

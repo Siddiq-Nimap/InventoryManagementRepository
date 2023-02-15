@@ -1,4 +1,4 @@
-﻿@model IEnumerable<CrudOperations.Models.Catagory>
+﻿@model IEnumerable<DAL.DTO.CatagoryDto>
 
 @{
     ViewBag.Title = "CatagoryList";
@@ -17,7 +17,7 @@
     <table class="table table-bordered table-hover table-striped">
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Id)
+               @Html.DisplayNameFor(model => model.Id)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.CatagoryName)

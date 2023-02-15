@@ -1,8 +1,12 @@
-﻿using CrudOperations.CustomFilters;
+﻿using AutoMapper;
+using BusinessLayer;
+using CrudOperations.CustomFilters;
 using CrudOperations.Interfaces;
-using CrudOperations.Interfaces.ProductInterfaces;
-using CrudOperations.Models;
+using DAL.DTO;
+using DAL.Models;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Security.Claims;
@@ -16,37 +20,35 @@ namespace CrudOperations.Controllers
    
     public class ProductController : Controller
     {
-        readonly IPaging page;
         readonly IFileSaving file;
-        readonly IProduct products;
-        readonly IProductInsertion ProductInsert;
-        readonly IProductModification ProductModify;
         readonly ILogin logins;
-        public ProductController(IPaging page,
+        readonly IAllRepository<Product> product;
+        readonly IPaging page;
+        public ProductController(
             IFileSaving file,
-            IProduct products,
             ILogin logins,
-            IProductInsertion insert,
-            IProductModification modify)
+           IAllRepository<Product> Pro,
+           IPaging page)
         {
-            this.page = page;
             this.file = file;
-            this.products = products;
             this.logins = logins;
-            this.ProductInsert = insert;
-            this.ProductModify = modify;
+            product = Pro;
+            this.page = page;
         }
 
         [HttpGet]
         public async Task<ActionResult> Index(int PagingNbr = 1)
         {
-            var data = await page.Paging<List<Product>>(PagingNbr, "List<Product>");         
+            var data = await page.Paging<List<Product>>(PagingNbr, "List<Product>");
 
             ViewBag.CurrentPage = PagingNbr;
 
             ViewBag.TotalPage = page.TotalPages();
 
-            return View(data);
+            var Prodto = Mapper.Map<IEnumerable<Product>, IEnumerable<ProductDto>>(data);
+
+            return View(Prodto);
+
         }
 
         [HttpGet]
@@ -70,16 +72,22 @@ namespace CrudOperations.Controllers
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [ActionName("Create")]
-        public async Task<ActionResult> CreateAsync(Product fruits)
+        
+        public async Task<ActionResult> CreateAsync(ProductDto fruits)
         {
-            string data = file.FileUpload(fruits);
+            var fruit = Mapper.Map<ProductDto, Product>(fruits);
+
+            string data = file.FileUpload(fruit);
             if (data.StartsWith("~/Images/"))
             {
-                fruits.ImagePath = data;
+                fruit.ImagePath = data;
 
-                bool Check = await ProductInsert.InsertProductAsync(fruits);
+                //bool Check = await ProductInsert.InsertProductAsync(fruits);
+                product.InsertModel(fruit);
 
-                if (Check == true){return Json("Your Data has been inserted successfully");}
+                bool check = await product.Save();
+
+                if (check == true){return Json("Your Data has been inserted successfully");}
                 else{return Json("Your Data has not inserted");}
             }
             else
@@ -91,29 +99,36 @@ namespace CrudOperations.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        [ActionName("Edit")]
-        public async Task<ActionResult> EditAsync(int Id)
+        public ActionResult Edit(int Id)
         {
-            var data = await products.GetProductByIdAsync(Id);
+            //var data = await products.GetProductByIdAsync(Id);
+            var data = product.GetModelById(Id);
             Session["Image"] = data.ImagePath;
-            return View(data);
+
+            var Prodto = Mapper.Map<Product, ProductDto>(data);
+            return View(Prodto);
         }
 
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [ActionName("Edit")]
-        public async Task<ActionResult> EditAsync(Product fruits)
+        
+        public async Task<ActionResult> EditAsync(ProductDto fruits)
         {
-            if (fruits.ImageFile != null)
+            var fruit = Mapper.Map<ProductDto , Product>(fruits);
+
+            if (fruit.ImageFile != null)
             {
-                string data = file.FileUpload(fruits);
+                string data = file.FileUpload(fruit);
 
                 if (data.StartsWith("~/Images/"))
                 {
-                    fruits.ImagePath = data;
+                    fruit.ImagePath = data;
 
-                    bool check = await ProductModify.EditProductAsync(fruits);
+                    //bool check = await ProductModify.EditProductAsync(fruits);
+                    product.UpdateModel(fruit);
+                    bool check = await product.Save();
 
                     if (check == true)
                     { 
@@ -126,8 +141,10 @@ namespace CrudOperations.Controllers
             }
             else
             {
-                fruits.ImagePath = Session["Image"].ToString();
-                bool check = await ProductModify.EditProductAsync(fruits);
+                fruit.ImagePath = Session["Image"].ToString();
+                //bool check = await ProductModify.EditProductAsync(fruits);
+               product.UpdateModel(fruit);
+                bool check = await product.Save();
 
                 if (check == true){return Json("Your Data has been updated successfully");}
                 else{ return Json("Your Data has not Edited");}
@@ -136,20 +153,29 @@ namespace CrudOperations.Controllers
         }
 
         [HttpGet]
-        [ActionName("Delete")]
-        public async Task<ActionResult> DeleteAsync(int id)
+       
+        public ActionResult Delete(int id)
         {
-            var data = await products.GetProductByIdAsync(id);
+            //var data = await products.GetProductByIdAsync(id);
+
+            var data = product.GetModelById(id);
+
             TempData["Images"] = data.ImagePath;
-            return View(data);
+
+            var prodto = Mapper.Map<Product, ProductDto>(data);
+            return View(prodto);
         }
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [ActionName("Delete")]
-        public async Task<ActionResult> DeleteAsync(Product pro)
+        public async Task<ActionResult> DeleteAsync(ProductDto prod)
         {
-            var data = await ProductModify.DeleteProductAsync(pro.Id);
+
+            //var data = await ProductModify.DeleteProductAsync(pro.Id);
+            var pro = Mapper.Map<ProductDto, Product>(prod);
+             product.DeleteModel(pro.Id);
+            var data = await product.Save();
             if (data == true)
             {
                 file.FileDelete(TempData["Images"].ToString());
@@ -159,13 +185,19 @@ namespace CrudOperations.Controllers
         }
 
         [HttpGet]
-        [ActionName("Details")]
-        public async Task<ActionResult> DetailsAsync(int Id)
+      
+        public ActionResult Details(int Id)
         {
-            var data = await products.GetProductByIdAsync(Id);
+            //var data = await products.GetProductByIdAsync(Id);
+            var data = product.GetModelById(Id);
+           
 
             if (data == null){return RedirectToAction("Index", "Catagory");}
-            else{return View(data);}
+            else
+            {
+                var prodto = Mapper.Map<Product,ProductDto>(data);
+                return View(prodto);
+            }
         }
         
         public ActionResult Pages()

@@ -1,26 +1,25 @@
-﻿using CrudOperations.Interfaces;
-using CrudOperations.Models;
-using CrudOperations.ViewModels;
+﻿using AutoMapper;
+using BusinessLayer;
+using CrudOperations.Interfaces;
+using DAL.DTO;
+using DAL.Models;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
-using System.Web.Security;
-using System.Web.UI.WebControls;
 
 namespace CrudOperations.Controllers
 {
     public class LoginController : Controller
     {
-        readonly ILogin Logins;
+        readonly ILogin logins;
         readonly IAuthenticationManager Authenticate;
-        public LoginController(ILogin logins, IAuthenticationManager authenticate)
+        readonly IAllRepository<Logins> Log;
+        public LoginController(ILogin logins, IAuthenticationManager authenticate,IAllRepository<Logins> log)
         {
-            Logins = logins;
+            this.logins = logins;
             Authenticate = authenticate;
+            Log = log;
         }
 
         [HttpGet]
@@ -31,19 +30,14 @@ namespace CrudOperations.Controllers
 
         [HttpPost]
         [ActionName("Index")]
-        public async Task<ActionResult> IndexAsync(LoginDto login, string returnUrl)
+        public async Task<ActionResult> IndexAsync(LoginDto login)
         {
             if (ModelState.IsValid)
             {
-                //bool data = await Logins.LoginAsync(login);
-                var data = await Logins.LoginEntAsync(login);
+                var data = await logins.LoginEntAsync(login);
                 if (data != null)
                 {
-                    //FormsAuthentication.SetAuthCookie(login.UserName, false);
-                    //if (Url.IsLocalUrl(returnUrl) && returnUrl.Length > 1 && returnUrl.StartsWith("/") && !returnUrl.StartsWith("//") && !returnUrl.StartsWith("/\\"))
-                    //{
-                    //    return Redirect(returnUrl);
-                    //}
+
                     var token = Authenticate.GenerateToken(data);
 
                     Response.Cookies.Set(new HttpCookie("Bearer", token));
@@ -67,8 +61,10 @@ namespace CrudOperations.Controllers
         {
             if(ModelState.IsValid)
             {
-                bool data = await Logins.InsertSignDetailsAsync(signup);
+                var sign = Mapper.Map<SignUpDto, Logins>(signup);
 
+                 Log.InsertModel(sign);
+                bool data = await Log.Save();
                 if (data == true)
                 {
                     ViewBag.LoginMessage = "Your Account has been created";
