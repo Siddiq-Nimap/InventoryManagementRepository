@@ -4,7 +4,7 @@
 using Glimpse.AspNet.Extensions;
 using Glimpse.Core.Extensibility;
 
-namespace CrudOperations
+namespace PMS
 {
     public class GlimpseSecurityPolicy:IRuntimePolicy
     {

@@ -1,12 +1,8 @@
 ﻿using AutoMapper;
-using DAL.DTO;
-using DAL.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+using PMS.Models.Models;
+using PMS.Models.Models.DTO;
 
-namespace CrudOperations.App_Start
+namespace PMS.App_Start
 {
     public class MappingProfile : Profile
     {

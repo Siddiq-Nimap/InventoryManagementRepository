@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Web;
 
-namespace DAL.DTO
+namespace PMS.Models.Models.DTO
 {
     public class ProductDto
     {

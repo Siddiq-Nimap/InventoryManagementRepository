@@ -1,11 +1,12 @@
-﻿using DAL.Models;
+﻿using PMS.Models.Models;
+using PMS.Models.Models.DTO;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Web.Mvc;
 using System.Web.Script.Serialization;
 
-namespace CrudOperations.Controllers
+namespace PMS.Controllers
 {
     public class ConsumingApiController : Controller
     {

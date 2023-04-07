@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Web;
 
-namespace DAL.Models
+namespace PMS.Models.Models
 {
     public class CatagoryList
     {

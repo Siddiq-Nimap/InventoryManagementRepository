@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 
-namespace DAL.DTO
+namespace PMS.Models.Models.DTO
 {
     public class SignUpDto
     {

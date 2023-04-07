@@ -6,7 +6,7 @@ using System.Linq;
 using System.Web;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace DAL.Models
+namespace PMS.Models.Models
 {
     public class Product
     {

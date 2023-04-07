@@ -1,7 +1,7 @@
 ﻿using System.Web;
 using System.Web.Optimization;
 
-namespace CrudOperations
+namespace PMS
 {
     public class BundleConfig
     {
@@ -25,7 +25,7 @@ namespace CrudOperations
                       "~/Scripts/bootstrap.js"));
 
             bundles.Add(new StyleBundle("~/Content/css").Include(
-                      "~/Content/bootstrap.css",
+                      "~/Content/Bootstrap.css",
                       "~/Content/site.css"));
         }
     }

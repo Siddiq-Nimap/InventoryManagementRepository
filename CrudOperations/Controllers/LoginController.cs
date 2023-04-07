@@ -1,25 +1,26 @@
 ﻿using AutoMapper;
-using BusinessLayer;
-using CrudOperations.Interfaces;
-using DAL.DTO;
-using DAL.Models;
+using BusinessLayer.IRepositories;
+using PMS.Services;
+using PMS.Services.IServices;
+using PMS.Models.Models;
+using PMS.Models.Models.DTO;
 using System;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
-namespace CrudOperations.Controllers
+namespace PMS.Controllers
 {
     public class LoginController : Controller
     {
-        readonly ILogin logins;
-        readonly IAuthenticationManager Authenticate;
-        readonly IAllRepository<Logins> Log;
-        public LoginController(ILogin logins, IAuthenticationManager authenticate,IAllRepository<Logins> log)
+        readonly IProductService _productService;
+        
+        readonly ICredentialService _credentialService;
+        
+        public LoginController(IProductService productService,ICredentialService credentialService)
         {
-            this.logins = logins;
-            Authenticate = authenticate;
-            Log = log;
+         _productService = productService;
+            _credentialService = credentialService;
         }
 
         [HttpGet]
@@ -34,11 +35,11 @@ namespace CrudOperations.Controllers
         {
             if (ModelState.IsValid)
             {
-                var data = await logins.LoginEntAsync(login);
+                var data = await _credentialService.LoginEntAsync(login);
                 if (data != null)
                 {
 
-                    var token = Authenticate.GenerateToken(data);
+                    var token =     _credentialService.GetToken(data);
 
                     Response.Cookies.Set(new HttpCookie("Bearer", token));
                     return RedirectToAction("Index", "Catagory");
@@ -63,8 +64,8 @@ namespace CrudOperations.Controllers
             {
                 var sign = Mapper.Map<SignUpDto, Logins>(signup);
 
-                 Log.InsertModel(sign);
-                bool data = await Log.Save();
+                 _credentialService.InsertModel(sign);
+                bool data = await _credentialService.Save();
                 if (data == true)
                 {
                     ViewBag.LoginMessage = "Your Account has been created";

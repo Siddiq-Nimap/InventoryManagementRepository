@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Http;
 
-namespace CrudOperations.App_Start
+namespace PMS.App_Start
 {
     public class WebApiConfig
     {

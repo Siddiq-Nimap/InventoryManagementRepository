@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
 
-namespace DAL.Models
+namespace PMS.Models.Models
 {
     public class Catagory
     {

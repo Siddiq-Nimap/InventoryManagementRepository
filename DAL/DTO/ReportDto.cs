@@ -1,4 +1,4 @@
-﻿namespace DAL.DTO
+﻿namespace PMS.Models.Models.DTO
 {
     public class ReportDto
     {

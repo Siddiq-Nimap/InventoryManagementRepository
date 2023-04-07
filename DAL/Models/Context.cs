@@ -1,6 +1,8 @@
-﻿using System.Data.Entity;
+﻿using PMS.Models.Models;
+using PMS.Models.Models.DTO;
+using System.Data.Entity;
 
-namespace DAL.Models
+namespace PMS.Models.Models
 {
     public class Context : DbContext
     {

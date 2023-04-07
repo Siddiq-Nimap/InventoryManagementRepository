@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web;
 
-namespace DAL.DTO
+namespace PMS.Models.Models.DTO
 {
     public class LoginDto
     {

@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
-using CrudOperations.App_Start;
-using CrudOperations.Business_Layer;
-using CrudOperations.Interfaces;
+using BusinessLayer.IRepositories;
+using BusinessLayer.Repositories;
+using PMS.App_Start;
+using PMS.Services.IServices;
 using System.Security.Claims;
 using System.Threading;
 using System.Web;
@@ -11,14 +12,14 @@ using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
 
-namespace CrudOperations
+namespace PMS
 {
     public class MvcApplication : HttpApplication
     {
-        readonly IAuthenticationManager Authenticate;
+        readonly ICredentialManager _credentialService;
         public MvcApplication()
         {
-           Authenticate = new AuthenticationClass();
+            _credentialService = new CredentialManager();
         }
 
         protected void Application_Start()
@@ -39,7 +40,7 @@ namespace CrudOperations
             if (token != null)
             {
                 
-               var principal = Authenticate.ValidationToken(token);
+               var principal = _credentialService.ValidationToken(token);
 
                 HttpContext.Current.User = principal;
                 Thread.CurrentPrincipal = principal;

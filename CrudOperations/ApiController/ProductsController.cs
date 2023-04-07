@@ -1,19 +1,19 @@
-﻿using BusinessLayer;
-using DAL.Models;
+﻿using PMS.Models.Models;
+using PMS.Services.Services;
 using System;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Script.Serialization;
 
-namespace CrudOperations.Controllers
+namespace PMS.Controllers
 {
     public class ProductsController : ApiController 
     {
-        readonly IAllRepository<Product> product;
-        public ProductsController(IAllRepository<Product> product)
+        readonly ProductService _productService;
+        public ProductsController(ProductService productService)
         {
-            this.product = product;
+            _productService = productService;
 
         }
 
@@ -21,7 +21,7 @@ namespace CrudOperations.Controllers
         [HttpGet]
         public async Task<IHttpActionResult> GetProducts()
         {
-            var data = await product.GetModel();
+            var data = await _productService.GetModel();
 
             JavaScriptSerializer scriptSerializer = new JavaScriptSerializer();
 
@@ -34,9 +34,9 @@ namespace CrudOperations.Controllers
         [HttpGet]
         public IHttpActionResult GetProduct(int id)
         {
-            var products =  product.GetModelById(id);
+            var products =  _productService.GetModelById(id);
 
-            if (product == null)
+            if (products == null)
             {
                 return BadRequest();
             }
@@ -53,8 +53,8 @@ namespace CrudOperations.Controllers
 
             try
             {
-                 product.UpdateModel(pro);
-                await product.Save();
+                 _productService.UpdateModel(pro);
+                await _productService.Save();
             }
 
             catch (Exception E){return BadRequest(E.Message);}
@@ -68,9 +68,9 @@ namespace CrudOperations.Controllers
         {
             if (!ModelState.IsValid){return BadRequest(ModelState);}
 
-           product.InsertModel(products);
+           _productService.InsertModel(products);
 
-            var check = await product.Save();
+            var check = await _productService.Save();
 
             if (check == true)
             {
@@ -84,13 +84,13 @@ namespace CrudOperations.Controllers
         [HttpDelete]
         public async Task<IHttpActionResult> DeleteProduct(int id)
         {
-            var products = product.GetModelById(id);
+            var products = _productService.GetModelById(id);
             if (products == null)
             {
                 return NotFound();
             }
-             product.DeleteModel(id);
-            var check = await product.Save();
+             _productService.DeleteModel(id);
+            var check = await _productService.Save();
             if(check == true) { return Ok(products); } else { return BadRequest(); }
 
             

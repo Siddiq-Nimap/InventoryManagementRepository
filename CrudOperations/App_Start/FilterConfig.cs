@@ -1,8 +1,8 @@
-﻿using CrudOperations.CustomFilters;
+﻿using PMS.CustomFilters;
 using System.Web;
 using System.Web.Mvc;
 
-namespace CrudOperations
+namespace PMS
 {
     public class FilterConfig
     {

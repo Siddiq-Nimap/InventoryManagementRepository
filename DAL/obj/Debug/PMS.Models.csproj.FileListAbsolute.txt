@@ -1,0 +1,15 @@
+C:\Users\Nimap\source\repos\ProductManagementSystem\DAL\bin\Debug\DAL.dll.config
+C:\Users\Nimap\source\repos\ProductManagementSystem\DAL\bin\Debug\DAL.dll
+C:\Users\Nimap\source\repos\ProductManagementSystem\DAL\bin\Debug\DAL.pdb
+C:\Users\Nimap\source\repos\ProductManagementSystem\DAL\bin\Debug\EntityFramework.dll
+C:\Users\Nimap\source\repos\ProductManagementSystem\DAL\bin\Debug\EntityFramework.SqlServer.dll
+C:\Users\Nimap\source\repos\ProductManagementSystem\DAL\bin\Debug\EntityFramework.xml
+C:\Users\Nimap\source\repos\ProductManagementSystem\DAL\bin\Debug\EntityFramework.SqlServer.xml
+C:\Users\Nimap\source\repos\ProductManagementSystem\DAL\obj\Debug\PMS.Models.csproj.AssemblyReference.cache
+C:\Users\Nimap\source\repos\ProductManagementSystem\DAL\obj\Debug\DAL.Migrations.add.resources
+C:\Users\Nimap\source\repos\ProductManagementSystem\DAL\obj\Debug\DAL.Migrations.AddingNull.resources
+C:\Users\Nimap\source\repos\ProductManagementSystem\DAL\obj\Debug\PMS.Models.csproj.GenerateResource.cache
+C:\Users\Nimap\source\repos\ProductManagementSystem\DAL\obj\Debug\PMS.Models.csproj.CoreCompileInputs.cache
+C:\Users\Nimap\source\repos\ProductManagementSystem\DAL\obj\Debug\PMS.Models.csproj.CopyComplete
+C:\Users\Nimap\source\repos\ProductManagementSystem\DAL\obj\Debug\DAL.dll
+C:\Users\Nimap\source\repos\ProductManagementSystem\DAL\obj\Debug\DAL.pdb

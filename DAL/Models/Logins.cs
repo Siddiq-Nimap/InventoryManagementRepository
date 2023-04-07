@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace DAL.Models
+namespace PMS.Models.Models
 {
     public class Logins
     {

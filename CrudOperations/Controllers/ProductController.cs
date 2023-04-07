@@ -1,49 +1,42 @@
 ﻿using AutoMapper;
-using BusinessLayer;
-using CrudOperations.CustomFilters;
-using CrudOperations.Interfaces;
-using DAL.DTO;
-using DAL.Models;
-using System;
+using PMS.CustomFilters;
+using PMS.Services;
+using PMS.Services.IServices;
+using PMS.Models.Models;
+using PMS.Models.Models.DTO;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
-namespace CrudOperations.Controllers
+namespace PMS.Controllers
 {
     [Authorize]
     [CustomFilterClass]
    
     public class ProductController : Controller
     {
-        readonly IFileSaving file;
-        readonly ILogin logins;
-        readonly IAllRepository<Product> product;
-        readonly IPaging page;
-        public ProductController(
-            IFileSaving file,
-            ILogin logins,
-           IAllRepository<Product> Pro,
-           IPaging page)
+        readonly IProductService _productService;
+        readonly ICredentialService _credentialService;
+        readonly IFileService _fileService;
+        public ProductController(IProductService productService , ICredentialService credentialService,IFileService fileService)
         {
-            this.file = file;
-            this.logins = logins;
-            product = Pro;
-            this.page = page;
+            _productService = productService;
+            _credentialService = credentialService;
+            _fileService = fileService;
+            
         }
 
         [HttpGet]
         public async Task<ActionResult> Index(int PagingNbr = 1)
         {
-            var data = await page.Paging<List<Product>>(PagingNbr, "List<Product>");
+            var data = await _productService.Paging(PagingNbr);
 
             ViewBag.CurrentPage = PagingNbr;
 
-            ViewBag.TotalPage = page.TotalPages();
+            ViewBag.TotalPage = _productService.TotalPages();
 
             var Prodto = Mapper.Map<IEnumerable<Product>, IEnumerable<ProductDto>>(data);
 
@@ -62,7 +55,7 @@ namespace CrudOperations.Controllers
             var IdentifierName = claims.Where(model => model.Type == ClaimTypes.NameIdentifier).FirstOrDefault();
             string name = IdentifierName.Value;
 
-            var data = await logins.GetIdByUsername(name);
+            var data = await _credentialService.GetIdByUsername(name);
 
             Session["userid"] = data;
             return View();
@@ -77,15 +70,15 @@ namespace CrudOperations.Controllers
         {
             var fruit = Mapper.Map<ProductDto, Product>(fruits);
 
-            string data = file.FileUpload(fruit);
+            string data = _fileService.UploadFile(fruit);
             if (data.StartsWith("~/Images/"))
             {
                 fruit.ImagePath = data;
 
                 //bool Check = await ProductInsert.InsertProductAsync(fruits);
-                product.InsertModel(fruit);
+                _productService.InsertModel(fruit);
 
-                bool check = await product.Save();
+                bool check = await _productService.Save();
 
                 if (check == true){return Json("Your Data has been inserted successfully");}
                 else{return Json("Your Data has not inserted");}
@@ -102,7 +95,7 @@ namespace CrudOperations.Controllers
         public ActionResult Edit(int Id)
         {
             //var data = await products.GetProductByIdAsync(Id);
-            var data = product.GetModelById(Id);
+            var data = _productService.GetModelById(Id);
             Session["Image"] = data.ImagePath;
 
             var Prodto = Mapper.Map<Product, ProductDto>(data);
@@ -120,19 +113,18 @@ namespace CrudOperations.Controllers
 
             if (fruit.ImageFile != null)
             {
-                string data = file.FileUpload(fruit);
+                string data = _fileService.UploadFile(fruit);
 
                 if (data.StartsWith("~/Images/"))
                 {
                     fruit.ImagePath = data;
 
-                    //bool check = await ProductModify.EditProductAsync(fruits);
-                    product.UpdateModel(fruit);
-                    bool check = await product.Save();
+                    _productService.UpdateModel(fruit);
+                    bool check = await _productService.Save();
 
                     if (check == true)
                     { 
-                        file.FileDelete(Session["Image"].ToString());
+                        _fileService.DeleteFile(Session["Image"].ToString());
                         return Json("Your Data has been successfully Edited");
                     }
                     else{ return Json("Your Data has not Edited"); }
@@ -142,9 +134,8 @@ namespace CrudOperations.Controllers
             else
             {
                 fruit.ImagePath = Session["Image"].ToString();
-                //bool check = await ProductModify.EditProductAsync(fruits);
-               product.UpdateModel(fruit);
-                bool check = await product.Save();
+               _productService.UpdateModel(fruit);
+                bool check = await _productService.Save();
 
                 if (check == true){return Json("Your Data has been updated successfully");}
                 else{ return Json("Your Data has not Edited");}
@@ -156,9 +147,8 @@ namespace CrudOperations.Controllers
        
         public ActionResult Delete(int id)
         {
-            //var data = await products.GetProductByIdAsync(id);
 
-            var data = product.GetModelById(id);
+            var data = _productService.GetModelById(id);
 
             TempData["Images"] = data.ImagePath;
 
@@ -172,13 +162,12 @@ namespace CrudOperations.Controllers
         public async Task<ActionResult> DeleteAsync(ProductDto prod)
         {
 
-            //var data = await ProductModify.DeleteProductAsync(pro.Id);
             var pro = Mapper.Map<ProductDto, Product>(prod);
-             product.DeleteModel(pro.Id);
-            var data = await product.Save();
+             _productService.DeleteModel(pro.Id);
+            var data = await _productService.Save();
             if (data == true)
             {
-                file.FileDelete(TempData["Images"].ToString());
+                _fileService.DeleteFile(TempData["Images"].ToString());
                 return RedirectToAction("Index", "Product");
             }
             else{return RedirectToAction("Delete","Product",new {id = pro.Id});}
@@ -188,8 +177,7 @@ namespace CrudOperations.Controllers
       
         public ActionResult Details(int Id)
         {
-            //var data = await products.GetProductByIdAsync(Id);
-            var data = product.GetModelById(Id);
+            var data = _productService.GetModelById(Id);
            
 
             if (data == null){return RedirectToAction("Index", "Catagory");}
